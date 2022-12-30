@@ -1,6 +1,6 @@
 import random
 from dataclasses import dataclass
-from enum import Enum, auto
+from enum import Enum
 
 
 class Couleur(Enum):
@@ -8,6 +8,8 @@ class Couleur(Enum):
     CARREAU = "♦️"
     TREFLE = "♣️"
     PIQUE = "♠️"
+
+    def nom(self): return self.value
 
 
 class Figure(Enum):
@@ -33,14 +35,53 @@ class Carte:
     figure: Figure
 
     def __repr__(self):
-        return f'{self.figure.nom()} de {self.couleur.value} ({self.force(atout_choisi)})'
+        return f'{self.figure.nom()} {self.couleur.value} ({self.force(atout_choisi)})'
 
     def force(self, atout: Couleur): return self.figure.force(self.couleur == atout)
 
 
-jeu = [Carte(c, f) for f in Figure for c in Couleur]
+@dataclass
+class Joueur:
+    nom: str
+    main: list[Carte]
+
+    def __init__(self, nom: str) -> None:
+        super().__init__()
+        self.nom = nom
+        self.main = []
+
+
+class Jeu:
+    cartes: list[Carte]
+
+    def __init__(self):
+        self.cartes = [Carte(c, f) for f in Figure for c in Couleur]
+        random.shuffle(self.cartes)
+
+    def distribuer(self, num_cartes: int, joueur: Joueur):
+        joueur.main += self.cartes[0:num_cartes]
+        del self.cartes[0:num_cartes]
+
+    def __repr__(self): return self.cartes.__repr__()
+
 
 atout_choisi = random.sample(list(Couleur), 1)[0]
 
-print(atout_choisi)
-print(jeu)
+
+def main():
+    jeu = Jeu()
+
+    joueurs = [Joueur("Magnien"), Joueur("Luc"), Joueur("Angèle"), Joueur("Papilou")]
+
+    print(jeu)
+
+    for num_cartes in [3, 2]:
+        for joueur in joueurs:
+            jeu.distribuer(num_cartes, joueur)
+
+    print(joueurs)
+
+    print("Atout choisi", atout_choisi.nom())
+
+
+main()
